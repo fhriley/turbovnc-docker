@@ -7,7 +7,7 @@ BASE_IMAGE = 'ubuntu:22.04'
 IMAGE_NAME = 'fhriley/turbovnc'
 PLATFORMS = ['linux/amd64', 'linux/arm64', 'linux/arm/v7']
 CACHE = f'type=registry,ref={IMAGE_NAME}:'
-BUILDX = 'docker buildx build {build_args} --platform {platforms} {tags} --cache-from {cache} --cache-to type=inline,mode=max {push} {load} .'
+BUILDX = 'docker buildx build {build_args} --platform {platforms} {tags} --cache-from {cache} --cache-to type=inline,mode=max {push} {load} {no_cache} .'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=f'Build {IMAGE_NAME}')
@@ -17,6 +17,8 @@ if __name__ == '__main__':
                         help='push the image')
     parser.add_argument('--load', action='store_true',
                         help='load the image')
+    parser.add_argument('--no-cache', action='store_true',
+                        help='Add the --no-cache flag')
     parser.add_argument('-b', '--base', default=BASE_IMAGE,
                         help=f'the base image (default: "{BASE_IMAGE}" )')
     parser.add_argument('-c', '--cache',
@@ -40,7 +42,8 @@ if __name__ == '__main__':
         tags=' '.join([f'--tag {IMAGE_NAME}:{tag}' for tag in args.tag]),
         cache=CACHE + (args.cache or args.tag[0]),
         push='--push' if args.push else '',
-        load='--load' if args.load else '--pull'
+        load='--load' if args.load else '--pull',
+        no_cache='--no-cache' if args.no_cache else '',
     )
 
     print(buildx)
