@@ -1,5 +1,5 @@
 ARG BASE_IMAGE="ubuntu:22.04"
-FROM $BASE_IMAGE
+FROM $BASE_IMAGE as build
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
@@ -9,6 +9,7 @@ RUN apt-get update \
         cmake \
         ca-certificates \
         libpam0g-dev \
+        libssl-dev \
         libx11-dev \
         libxext-dev \
         ninja-build \
@@ -32,6 +33,20 @@ RUN cd /tmp \
     && cd turbovnc \
     && mkdir build \
     && cd build \
-    && cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DTVNC_USETLS=0 -DTVNC_BUILDVIEWER=0 -DTVNC_BUILDSERVER=1 -DTVNC_BUILDJAVA=0 -DTVNC_BUILDWEBSERVER=0 .. \
+    && cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DTVNC_DLOPENSSL=0 -DTVNC_BUILDVIEWER=0 -DTVNC_BUILDSERVER=1 -DTVNC_BUILDJAVA=0 -DTVNC_BUILDWEBSERVER=0 .. \
     && cmake --build . -j $(nproc) \
     && cmake --install .
+
+
+FROM $BASE_IMAGE
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install \
+        libc6 \
+        libssl3 \
+        libx11-6 \
+        libxext6 \
+    && rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
+
+COPY --from=build /opt/TurboVNC /opt/TurboVNC
