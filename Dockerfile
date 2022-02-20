@@ -47,6 +47,9 @@ RUN apt-get update \
         libssl3 \
         libx11-6 \
         libxext6 \
+        xauth \
+        xkb-data \
+        x11-xkb-utils \
     && rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
 
 COPY --from=build /opt/TurboVNC /opt/TurboVNC
